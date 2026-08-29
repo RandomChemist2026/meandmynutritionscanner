@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Personal barcode nutrition tracker">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="app.css">
+  <title>My Nutrition Scanner</title>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>My Nutrition Scanner</h1>
+      <p>Scan. Weigh. Track.</p>
+    </div>
+    <button id="installBtn" class="ghost hidden" type="button">Install</button>
+  </header>
+
+  <main class="shell">
+    <section class="card scanner-card">
+      <div class="section-head">
+        <div>
+          <h2>1. Scan or enter barcode</h2>
+          <p>Packaged foods are looked up in Open Food Facts.</p>
+        </div>
+        <span id="networkBadge" class="badge">Online</span>
+      </div>
+
+      <div class="barcode-row">
+        <input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="EAN / UPC barcode" aria-label="Barcode">
+        <button id="lookupBtn" type="button">Look up</button>
+        <button id="scanBtn" class="secondary" type="button">Scan camera</button>
+      </div>
+
+      <div id="scannerPanel" class="scanner-panel hidden">
+        <video id="video" playsinline muted></video>
+        <div class="scan-frame" aria-hidden="true"></div>
+        <div class="scanner-actions">
+          <button id="stopScanBtn" class="danger" type="button">Stop camera</button>
+        </div>
+      </div>
+
+      <p id="status" class="status" aria-live="polite">Ready.</p>
+    </section>
+
+    <section id="foodCard" class="card">
+      <div class="food-head">
+        <img id="productImage" class="product-image hidden" alt="">
+        <div class="food-title">
+          <label for="foodName">Food name</label>
+          <input id="foodName" placeholder="e.g. Greek yogurt">
+          <div id="brandLine" class="muted"></div>
+        </div>
+      </div>
+
+      <div class="grid-two">
+        <label>
+          <span>Weight eaten (g)</span>
+          <input id="weightInput" type="number" min="0.1" max="5000" step="0.1" value="100">
+        </label>
+        <label>
+          <span>Meal</span>
+          <select id="mealSelect">
+            <option>Breakfast</option>
+            <option>Lunch</option>
+            <option>Dinner</option>
+            <option>Snack</option>
+          </select>
+        </label>
+      </div>
+
+      <details class="nutrition-edit">
+        <summary>Nutrition per 100 g</summary>
+        <div class="nutrient-grid">
+          <label><span>Calories (kcal)</span><input id="kcal100" type="number" min="0" step="0.1"></label>
+          <label><span>Protein (g)</span><input id="protein100" type="number" min="0" step="0.1"></label>
+          <label><span>Carbs (g)</span><input id="carbs100" type="number" min="0" step="0.1"></label>
+          <label><span>Fat (g)</span><input id="fat100" type="number" min="0" step="0.1"></label>
+          <label><span>Fiber (g)</span><input id="fiber100" type="number" min="0" step="0.1"></label>
+          <label><span>Sugar (g)</span><input id="sugar100" type="number" min="0" step="0.1"></label>
+          <label><span>Saturated fat (g)</span><input id="satfat100" type="number" min="0" step="0.1"></label>
+          <label><span>Salt (g)</span><input id="salt100" type="number" min="0" step="0.001"></label>
+        </div>
+        <p class="muted small">You can correct database values. Saved corrections are remembered on this device for that barcode.</p>
+      </details>
+
+      <div class="portion">
+        <div class="portion-kcal">
+          <span>Your portion</span>
+          <strong id="portionKcal">0 kcal</strong>
+        </div>
+        <div class="macro-grid">
+          <div><span>Protein</span><strong id="portionProtein">0 g</strong></div>
+          <div><span>Carbs</span><strong id="portionCarbs">0 g</strong></div>
+          <div><span>Fat</span><strong id="portionFat">0 g</strong></div>
+          <div><span>Fiber</span><strong id="portionFiber">0 g</strong></div>
+        </div>
+        <details>
+          <summary>More nutrients</summary>
+          <div class="more-grid">
+            <div><span>Sugar</span><strong id="portionSugar">0 g</strong></div>
+            <div><span>Saturated fat</span><strong id="portionSatfat">0 g</strong></div>
+            <div><span>Salt</span><strong id="portionSalt">0 g</strong></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="action-row">
+        <button id="saveFoodBtn" class="secondary" type="button">Save/correct food</button>
+        <button id="addMealBtn" type="button">Add to today</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Today</h2>
+          <p id="todayDate"></p>
+        </div>
+        <button id="clearTodayBtn" class="ghost" type="button">Clear today</button>
+      </div>
+
+      <div class="totals-grid">
+        <div><span>Calories</span><strong id="totalKcal">0</strong><small>kcal</small></div>
+        <div><span>Protein</span><strong id="totalProtein">0</strong><small>g</small></div>
+        <div><span>Carbs</span><strong id="totalCarbs">0</strong><small>g</small></div>
+        <div><span>Fat</span><strong id="totalFat">0</strong><small>g</small></div>
+      </div>
+
+      <div id="mealLog" class="meal-log"></div>
+
+      <div class="action-row">
+        <button id="exportBtn" class="secondary" type="button">Export CSV</button>
+        <button id="savedFoodsBtn" class="ghost" type="button">Saved foods</button>
+      </div>
+    </section>
+
+    <section id="savedPanel" class="card hidden">
+      <div class="section-head">
+        <div>
+          <h2>Saved foods</h2>
+          <p>Your corrected foods stay on this device.</p>
+        </div>
+        <button id="closeSavedBtn" class="ghost" type="button">Close</button>
+      </div>
+      <div id="savedFoodsList"></div>
+    </section>
+
+    <footer>
+      Nutrition values are calculations from label/database data and food weight, not laboratory measurements.
+      Product data: Open Food Facts.
+    </footer>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
